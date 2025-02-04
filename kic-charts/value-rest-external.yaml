@@ -1,0 +1,57 @@
+deployment:
+  test:
+    enabled: false
+
+controller:
+  proxy:
+    nameOverride: "{{ .Release.Name }}-gateway-proxy"
+
+  enabled: true
+  image:
+    repository: "kong/kubernetes-ingress-controller"
+    tag: "3.3.1"
+  deployment:
+    kong:
+      enabled: false
+
+  ingressController:
+    enabled: true
+    env:
+      # ingressClass: "rest" activate only if you're using ingress class
+      # gateway_to_reconcile: "rest-api/kong2" activate only if you're using a single gatewayclass for multiple gateways
+      gateway_api_controller_name:	konghq.com/kic-gateway-controller-external
+    gatewayDiscovery:
+      enabled: true
+      generateAdminApiService: true
+
+gateway:
+  enabled: true
+  deployment:
+    kong:
+      enabled: true
+  image:
+    repository: "kong/kong-gateway"
+    tag: "3.4.3.13"
+    effectiveSemver: 3.4.3
+    pullPolicy: IfNotPresent
+    # pullSecrets:
+    #   - regcred
+  admin:
+    enabled: true
+    type: ClusterIP
+    clusterIP: None
+  ingressController:
+    enabled: false
+  proxy:
+    http:
+      servicePort: 8001
+    tls:
+      servicePort: 8445
+  env:
+    database: "off"
+    log_level: "debug"
+  manager:
+   enabled: true
+   type: ClusterIP
+   ingress:
+     enabled: false

@@ -1,0 +1,13 @@
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: rest
+spec:
+  controller: ingress-controllers.konghq.com/kong
+---
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: soap
+spec:
+  controller: ingress-controllers.konghq.com/kong

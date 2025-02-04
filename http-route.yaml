@@ -1,0 +1,24 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+ name: demo
+ annotations:
+   konghq.com/strip-path: "true"
+spec:
+ parentRefs:
+ - name: internal-gateway
+   namespace: rest-api
+ - name: external-gateway
+   namespace: rest2-api
+ rules:
+ - matches:
+   - path:
+       type: PathPrefix
+       value: /test
+   backendRefs:  #reference aux services backend crées dans le cluster ici tu as 2httpbin qui utilisent le même port
+   - name: httpbin
+     kind: Service
+     port: 80
+   - name: httpbin2
+     kind: Service
+     port: 80
