@@ -13,7 +13,7 @@ metadata:
   name: external-gateway
   namespace: rest2-api
 spec:
-  gatewayClassName: kong2
+  gatewayClassName: external-gateway
   listeners:
   - name: prod-web
     port: 80
@@ -30,7 +30,7 @@ metadata:
   name: external-gateway
   namespace: soap2-api
 spec:
-  gatewayClassName: kong2
+  gatewayClassName: external-gateway
   listeners:
   - name: prod-web
     port: 80
