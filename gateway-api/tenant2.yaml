@@ -1,0 +1,106 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: t2-gw
+  labels:
+    t2-gw-access: "true"
+---
+kind: GatewayConfiguration
+apiVersion: gateway-operator.konghq.com/v1beta1
+metadata:
+  name: kong
+  namespace: t2-gw
+spec:
+  dataPlaneOptions:
+    deployment:
+      podTemplateSpec:
+        spec:
+          containers:
+            - name: proxy
+              image: kong:3.9.0
+              readinessProbe:
+                initialDelaySeconds: 1
+                periodSeconds: 1
+  controlPlaneOptions:
+    deployment:
+      podTemplateSpec:
+        spec:
+          containers:
+            - name: controller
+              image: kong/kubernetes-ingress-controller:3.4.1
+              env:
+                - name: CONTROLLER_LOG_LEVEL
+                  value: debug
+---
+kind: GatewayClass
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: t2-gw
+spec:
+  controllerName: konghq.com/gateway-operator
+  parametersRef:
+    group: gateway-operator.konghq.com
+    kind: GatewayConfiguration
+    name: kong
+    namespace: t2-gw
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: t2-gw
+  namespace: t2-gw
+spec:
+  gatewayClassName: t2-gw
+  listeners:
+    - name: prod-web
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        kinds:
+          - kind: HTTPRoute
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              t2-gw-access: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: t2-service-1
+  labels:
+    t2-gw-access: "true"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: proxy-to-httpbin
+  namespace: t2-service-1
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+  type: ExternalName
+  externalName: httpbin.org
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: proxy-from-k8s-to-httpbin
+  namespace: t2-service-1
+  annotations:
+    konghq.com/strip-path: "true"
+spec:
+  parentRefs:
+    - name: t2-gw
+      namespace: t2-gw
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /t2-httpbin
+      backendRefs:
+        - name: proxy-to-httpbin
+          kind: Service
+          port: 80

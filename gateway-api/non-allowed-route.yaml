@@ -1,0 +1,41 @@
+# Tenant 3 service tries to add a route to tenant 1 gateway which will be rejected by GW API
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: t3-service-1
+  labels:
+    t3-gw-access: "true"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: proxy-to-httpbin
+  namespace: t3-service-1
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+  type: ExternalName
+  externalName: httpbin.org
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: proxy-from-k8s-to-httpbin
+  namespace: t3-service-1
+  annotations:
+    konghq.com/strip-path: "true"
+spec:
+  parentRefs:
+    - name: t1-gw
+      namespace: t1-gw
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /t3-httpbin
+      backendRefs:
+        - name: proxy-to-httpbin
+          kind: Service
+          port: 80
