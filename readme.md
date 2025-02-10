@@ -71,6 +71,9 @@ kubectl -n t3-service-1  get httproute proxy-from-k8s-to-httpbin -o yaml | yq .s
 ```
 
 
-# Considerations for Engineering team
+# Considerations 
 
-* GatewayConfiguration should be explored via GatewayClass
+* Gateway.spec.infrastructure --> maybe this is better used for Gateway specific configuration since it erases the need for different gateway classes
+* global CORS setting in this setup
+* different version of KIC in one cluster --> minor and patch version on upgrading (3 months)
+* 
