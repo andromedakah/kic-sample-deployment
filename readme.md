@@ -45,14 +45,14 @@ Get LB IPs and curl test routes.
 
 export LB1_IP=$(kubectl get svc --namespace t1-gw $(kubectl get svc --no-headers -o custom-columns=":metadata.name" -n t1-gw | grep '^dataplane-ingress-') -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-curl ${LB1_IP}/t1-httpbin/get
+curl ${LB1_IP}/httpbin/get
 
 
 #Test tenant 2 route
 
 export LB2_IP=$(kubectl get svc --namespace t2-gw $(kubectl get svc --no-headers -o custom-columns=":metadata.name" -n t2-gw | grep '^dataplane-ingress-') -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-curl ${LB2_IP}/t2-httpbin/get
+curl ${LB2_IP}/httpbin/get
 ```
 
 ## Test to add a route to GW1 from a non-allowed namespace
