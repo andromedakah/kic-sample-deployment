@@ -1,0 +1,25 @@
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: global-file-log-t2
+  annotations:
+    kubernetes.io/ingress.class: t2-gw
+  labels:
+    global: "true"
+config:
+  path: "/dev/stdout"
+plugin: file-log
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: global-correlation-id-t2
+  annotations:
+    kubernetes.io/ingress.class: t2-gw
+  labels:
+    global: "true"
+config:
+  header_name: Tenant2-Kong-Request-ID
+  generator: uuid#counter
+  echo_downstream: true
+plugin: correlation-id
