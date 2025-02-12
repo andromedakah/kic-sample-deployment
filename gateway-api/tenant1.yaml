@@ -62,12 +62,7 @@ metadata:
   name: t1-gw
   namespace: t1-gw
 spec:
-  gatewayClassName: kong
-  infrastructure:
-    parametersRef:
-      group: gateway-operator.konghq.com
-      kind: GatewayConfiguration
-      name: kong
+  gatewayClassName: t1-gw
   listeners:
     - name: prod-web
       port: 80

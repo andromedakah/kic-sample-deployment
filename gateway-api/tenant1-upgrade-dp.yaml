@@ -25,3 +25,5 @@ spec:
               env:
                 - name: CONTROLLER_LOG_LEVEL
                   value: debug
+                - name: CONTROLLER_INGRESS_CLASS
+                  value: t1-gw

@@ -6,6 +6,12 @@ e.g. `
 kind create cluster
 `
 
+use cloud-provider-kind for loadbalancer configuration and leave it running (or use a different tool/port-forwarding)
+
+```
+sudo cloud-provider-kind
+```
+
 ## Install KGO
 
 install GW API CRDS
@@ -27,32 +33,28 @@ helm upgrade --install kgo kong/gateway-operator -n kong-system --create-namespa
 ## Install Tenant resources
 
 ```
-kubectl apply -f gateway-api/tenant1.yaml
-kubectl apply -f gateway-api/tenant2.yaml
+kubectl apply -f gateway-api/tenant1.yaml -f gateway-api/tenant2.yaml
+```
+
+## Export LB IPs
+
+```
+export LB1_IP=$(kubectl get svc --namespace t1-gw $(kubectl get svc --no-headers -o custom-columns=":metadata.name" -n t1-gw | grep '^dataplane-ingress-') -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+export LB2_IP=$(kubectl get svc --namespace t2-gw $(kubectl get svc --no-headers -o custom-columns=":metadata.name" -n t2-gw | grep '^dataplane-ingress-') -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
 ```
 
 ## Test Routes
 
-use cloud-provider-kind for loadbalancer configuration and leave it running (or use a different tool/port-forwarding)
-
-```
-sudo cloud-provider-kind
-```
-
-Get LB IPs and curl test routes.
+Curl test routes.
 
 ```
 #Test tenant 1 route
-
-export LB1_IP=$(kubectl get svc --namespace t1-gw $(kubectl get svc --no-headers -o custom-columns=":metadata.name" -n t1-gw | grep '^dataplane-ingress-') -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
 curl ${LB1_IP}/httpbin/get
 
 
 #Test tenant 2 route
-
-export LB2_IP=$(kubectl get svc --namespace t2-gw $(kubectl get svc --no-headers -o custom-columns=":metadata.name" -n t2-gw | grep '^dataplane-ingress-') -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
 curl ${LB2_IP}/httpbin/get
 ```
 
@@ -79,7 +81,11 @@ T2: GW 3.9.0, KIC 3.4.1
 
 Those version are in the range of supported version by the KGO, which are described [here](https://docs.konghq.com/gateway-operator/1.4.x/reference/version-compatibility/).
 
-Run `kubectl apply -f gateway-api/tenant1-upgrade-dp.yaml` to upgrade the T1 GW to version 3.8.x which is the latest version that the KIC 3.3.0 supports as of the compatibility matrix [here](https://docs.konghq.com/kubernetes-ingress-controller/latest/reference/version-compatibility/#kong).
+Run 
+```
+kubectl apply -f gateway-api/tenant1-upgrade-dp.yaml
+```
+ to upgrade the T1 GW to version 3.8.x which is the latest version that the KIC 3.3.0 supports as of the compatibility matrix [here](https://docs.konghq.com/kubernetes-ingress-controller/latest/reference/version-compatibility/#kong).
 
 ## Apply global plugins
 
@@ -88,7 +94,7 @@ For applying global plugins currently an IngressClass is still required. This is
 Install the global plugins
 
 ```
-k apply -f gateway-api/tenant1-global-plugin.yaml -f gateway-api/tenant2-global-plugin.yaml 
+kubectl apply -f gateway-api/tenant1-global-plugin.yaml -f gateway-api/tenant2-global-plugin.yaml 
 ```
 
 The example configures file-log and correlation-id plugin for both tenants. Name collision needs to be prevented here, which is a drawback.
@@ -105,4 +111,3 @@ curl  -s ${LB2_IP}/httpbin/get | grep -i Kong-Request-ID
 
 * Gateway.spec.infrastructure --> currently not implemented by KGO/KIC
 * different version of KIC in one cluster --> minor and patch version on upgrading (3 months) --> this works
-* 
