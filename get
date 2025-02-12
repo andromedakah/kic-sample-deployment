@@ -1,0 +1,16 @@
+{
+  "args": {}, 
+  "headers": {
+    "Accept": "*/*", 
+    "Host": "172.19.0.3", 
+    "Tenant2-Kong-Request-Id": "ea629646-e8da-4459-b961-d5c7d64087a3#9", 
+    "User-Agent": "curl/8.7.1", 
+    "X-Amzn-Trace-Id": "Root=1-67ab6f50-1700c4382da415a82a428bb8", 
+    "X-Forwarded-Host": "172.19.0.3", 
+    "X-Forwarded-Path": "/httpbin/get", 
+    "X-Forwarded-Prefix": "/httpbin/", 
+    "X-Kong-Request-Id": "2f09b1780417116e70fbd402de70827b"
+  }, 
+  "origin": "10.244.0.1, 79.204.63.196", 
+  "url": "http://172.19.0.3/get"
+}

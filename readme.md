@@ -11,7 +11,8 @@ kind create cluster
 install GW API CRDS
 
 ```
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
+# kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
 ```
 
 
@@ -70,10 +71,38 @@ curl ${LB1_IP}/t3-httpbin/get
 kubectl -n t3-service-1  get httproute proxy-from-k8s-to-httpbin -o yaml | yq .status
 ```
 
+## Test Upgrade and different versions
+
+The current situation is that both tenants run a different version of KIC and of the Gateway itself. 
+T1: GW 3.4.0, KIC 3.3.0
+T2: GW 3.9.0, KIC 3.4.1
+
+Those version are in the range of supported version by the KGO, which are described [here](https://docs.konghq.com/gateway-operator/1.4.x/reference/version-compatibility/).
+
+Run `kubectl apply -f gateway-api/tenant1-upgrade-dp.yaml` to upgrade the T1 GW to version 3.8.x which is the latest version that the KIC 3.3.0 supports as of the compatibility matrix [here](https://docs.konghq.com/kubernetes-ingress-controller/latest/reference/version-compatibility/#kong).
+
+## Apply global plugins
+
+For applying global plugins currently an IngressClass is still required. This is created in the tenant resources already, currently per tenant. It can be debated if there is value in sharing an ingress class to have global plugins be able to be shared across tenants.
+
+Install the global plugins
+
+```
+k apply -f gateway-api/tenant1-global-plugin.yaml -f gateway-api/tenant2-global-plugin.yaml 
+```
+
+The example configures file-log and correlation-id plugin for both tenants. Name collision needs to be prevented here, which is a drawback.
+
+Test with the example curls listed above and see the different correlationId headers `Tenant1-Kong-Request-ID` and `Tenant2-Kong-Request-ID`. See the dataplane logs to view the requests being logged to stdout.
+
+```
+curl  -s ${LB1_IP}/httpbin/get | grep -i Kong-Request-ID
+curl  -s ${LB2_IP}/httpbin/get | grep -i Kong-Request-ID
+```
+
 
 # Considerations 
 
-* Gateway.spec.infrastructure --> maybe this is better used for Gateway specific configuration since it erases the need for different gateway classes
-* global CORS setting in this setup
-* different version of KIC in one cluster --> minor and patch version on upgrading (3 months)
+* Gateway.spec.infrastructure --> currently not implemented by KGO/KIC
+* different version of KIC in one cluster --> minor and patch version on upgrading (3 months) --> this works
 * 

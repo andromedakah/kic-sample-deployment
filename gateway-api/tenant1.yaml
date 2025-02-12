@@ -1,4 +1,13 @@
 ---
+# This needs to be created to apply plugins that require an ingress class setting:
+# https://docs.konghq.com/kubernetes-ingress-controller/latest/reference/resource-requiring-ingress-class/
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: t1-gw
+spec:
+  controller: konghq.com/kic-gateway-controller
+---
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -9,7 +18,7 @@ metadata:
 kind: GatewayConfiguration
 apiVersion: gateway-operator.konghq.com/v1beta1
 metadata:
-  name: kong
+  name: t1-gw
   namespace: t1-gw
 spec:
   dataPlaneOptions:
@@ -18,7 +27,7 @@ spec:
         spec:
           containers:
             - name: proxy
-              image: kong:3.9.0
+              image: kong:3.4.0
               readinessProbe:
                 initialDelaySeconds: 1
                 periodSeconds: 1
@@ -28,11 +37,24 @@ spec:
         spec:
           containers:
             - name: controller
-              image: kong/kubernetes-ingress-controller:3.4.1
+              image: kong/kubernetes-ingress-controller:3.3.0
               env:
                 - name: CONTROLLER_LOG_LEVEL
                   value: debug
-
+                - name: CONTROLLER_INGRESS_CLASS
+                  value: t1-gw
+---
+kind: GatewayClass
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: t1-gw
+spec:
+  controllerName: konghq.com/gateway-operator
+  parametersRef:
+    group: gateway-operator.konghq.com
+    kind: GatewayConfiguration
+    name: t1-gw
+    namespace: t1-gw
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
