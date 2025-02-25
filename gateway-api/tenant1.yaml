@@ -95,6 +95,18 @@ spec:
   type: ExternalName
   externalName: httpbin.konghq.com
 ---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rate-limit
+  namespace: t1-service-1
+  annotations:
+    kubernetes.io/ingress.class: kong
+config:
+  minute: 5
+  policy: local
+plugin: rate-limiting
+---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -102,6 +114,7 @@ metadata:
   namespace: t1-service-1
   annotations:
     konghq.com/strip-path: "true"
+    konghq.com/plugins: "rate-limit"
 spec:
   parentRefs:
     - name: t1-gw

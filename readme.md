@@ -51,11 +51,11 @@ Curl test routes.
 
 ```
 #Test tenant 1 route
-curl ${LB1_IP}/httpbin/get
+curl -i ${LB1_IP}/httpbin/get
 
 
 #Test tenant 2 route
-curl ${LB2_IP}/httpbin/get
+curl -i ${LB2_IP}/httpbin/get
 ```
 
 ## Test to add a route to GW1 from a non-allowed namespace
@@ -111,3 +111,11 @@ curl  -s ${LB2_IP}/httpbin/get | grep -i Kong-Request-ID
 
 * Gateway.spec.infrastructure --> currently not implemented by KGO/KIC
 * different version of KIC in one cluster --> minor and patch version on upgrading (3 months) --> this works
+* 3.10 in compat table? 
+  *  next KIC version will be compatible with 3.4 and 3.10, the plan is to hold that dual LTS compatibility in the future, it was not done for 2.8 because of major version change
+  * upgrading of DPs can be done from each version to another e.g. 3.4 to 3.7 directly even if not  LTS since it is a dbless setup
+  * KGO does not have LTS plans as of now
+  * Latest KGO will support all actively supported KIC versions in the latest major version (including LTS)
+* only local and redis strategy for RLA/Caching in hybrid mode --> this is no change since kond hybrid DPs do not have database conections
+* per route plugin added to demo
+* 
