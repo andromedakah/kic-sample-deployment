@@ -31,6 +31,18 @@ spec:
               readinessProbe:
                 initialDelaySeconds: 1
                 periodSeconds: 1
+              env:
+                # - name: KONG_ADMIN_GUI_API_URL
+                #   value: http://localhost:8001
+                - name: KONG_ADMIN_LISTEN
+                  value: 0.0.0.0:8444 ssl reuseport backlog=16384, 0.0.0.0:8001 reuseport backlog=16384
+              ports:
+                - name: manager
+                  containerPort: 8002
+                  protocol: TCP
+                - name: admin
+                  containerPort: 8001
+                  protocol: TCP
   controlPlaneOptions:
     deployment:
       podTemplateSpec:
@@ -43,6 +55,7 @@ spec:
                   value: debug
                 - name: CONTROLLER_INGRESS_CLASS
                   value: t1-gw
+
 ---
 kind: GatewayClass
 apiVersion: gateway.networking.k8s.io/v1
